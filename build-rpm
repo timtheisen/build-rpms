@@ -1,8 +1,8 @@
 #!/bin/sh
-mkdir -p ~/rpmbuild/SOURCES
-mv sources/* ~/rpmbuild/SOURCES
-yum-builddep -y --enablerepo=htcondor-daily *.spec
-rpmbuild -ba *.spec
+mkdir -p /tmp/rpmbuild/SOURCES
+mv sources/* /tmp/rpmbuild/SOURCES
+yum-builddep -y *.spec
+rpmbuild -ba --define="_topdir /tmp/rpmbuild" *.spec
 ret=$?
-mv $(find ~/rpmbuild -name \*.rpm) .
+mv $(find /tmp/rpmbuild -name \*.rpm) .
 exit $ret

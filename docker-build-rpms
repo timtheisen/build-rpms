@@ -12,7 +12,7 @@ image_name=buildrpm
 container_name=buildrpm$$
 progdir=$(dirname "$0")
 
-for arch in x86_64*; do
+for arch in *_*; do
 
     if [ ! -d output/${arch} ]; then
         if ! docker image inspect ${image_name}:${arch} &>/dev/null; then
