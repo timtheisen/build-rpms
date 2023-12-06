@@ -1,0 +1,8 @@
+#!/bin/sh
+mkdir -p ~/rpmbuild/SOURCES
+mv sources/* ~/rpmbuild/SOURCES
+yum-builddep -y --enablerepo=htcondor-daily *.spec
+rpmbuild -ba *.spec
+ret=$?
+mv $(find ~/rpmbuild -name \*.rpm) .
+exit $ret

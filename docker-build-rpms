@@ -1,0 +1,60 @@
+#!/bin/bash
+
+usage() {
+    echo "Usage: $(basename $0) spec-file source-directory"
+}
+
+if [ $# -ne 2 ]; then
+    usage
+    exit 1
+fi
+image_name=buildrpm
+container_name=buildrpm$$
+progdir=$(dirname "$0")
+
+for arch in x86_64*; do
+
+    if [ ! -d output/${arch} ]; then
+        if ! docker image inspect ${image_name}:${arch} &>/dev/null; then
+            docker build ${arch} --tag ${image_name}:${arch}
+        fi
+
+        tmp_working_dir=$(mktemp -d "${TMPDIR:-/tmp}/buildrpm-XXXXXX")
+        mkdir -p ${tmp_working_dir}/sources
+        cp -p $1 ${tmp_working_dir}
+        cp -p $2/* ${tmp_working_dir}/sources
+        myuid=$(id -u)
+        docker run -it --name $container_name  \
+            -v "$(cd "$progdir"; pwd):/build-rpm:ro"  -v "$tmp_working_dir:/working:rw" \
+            -e "myuid=$myuid" \
+            -w /working \
+            ${image_name}:${arch} sh -c '
+            /build-rpm/build-rpm; ret=$?
+            chown $myuid *
+            exit $ret' sh build-rpm; ret=$?
+
+        if [[ $ret != 0 ]]; then
+            echo "Failed with code $ret."
+            echo "Output (if any) has been left in $tmp_working_dir."
+            echo "Investigate the error with:"
+            echo "      docker start $container_name && docker exec -it $container_name bash"
+            echo "once done, remove the container with:"
+            echo "      docker rm -f $container_name"
+            exit $ret
+        else
+            echo "Successful."
+            mkdir -p output/$arch
+            if mv "$tmp_working_dir"/*.rpm output/$arch; then
+                echo "RPMs have been put into output/$arch"
+                rm -rf "$tmp_working_dir"
+            else
+                echo "Error transferring output."
+                echo "Output has been left in $tmp_working_dir."
+            fi
+            rmdir working &>/dev/null || :
+            docker stop $container_name &>/dev/null || :
+            docker rm $container_name >/dev/null
+        fi
+    fi
+
+done
