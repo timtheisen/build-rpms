@@ -15,8 +15,9 @@ progdir=$(dirname "$0")
 for arch in *_*; do
 
     if [ ! -d output/${arch} ]; then
+        platform="linux/${arch/_[^_]*/}"
         if ! docker image inspect ${image_name}:${arch} &>/dev/null; then
-            docker build ${arch} --tag ${image_name}:${arch}
+            docker build ${arch} --platform $platform --tag ${image_name}:${arch}
         fi
 
         tmp_working_dir=$(mktemp -d "${TMPDIR:-/tmp}/buildrpm-XXXXXX")
@@ -45,7 +46,7 @@ for arch in *_*; do
             echo "Successful."
             mkdir -p output/$arch
             if mv "$tmp_working_dir"/*.rpm output/$arch; then
-                echo "RPMs have been put into output/$arch"
+                echo "======= RPMs have been put into output/$arch ======="
                 rm -rf "$tmp_working_dir"
             else
                 echo "Error transferring output."
