@@ -15,7 +15,10 @@ progdir=$(dirname "$0")
 for arch in *_*; do
 
     if [ ! -d output/${arch} ]; then
-        platform="linux/${arch/_[^_]*/}"
+        platform=$(echo "linux/${arch}" | sed s/_[^_]*$//)
+        if [ $platform == 'x86_64_v2' ]; then
+            platform='linux/amd64/v2'
+        fi
         if ! docker image inspect ${image_name}:${arch} &>/dev/null; then
             docker build ${arch} --platform $platform --tag ${image_name}:${arch}
         fi
