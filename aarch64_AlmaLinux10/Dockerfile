@@ -1,4 +1,4 @@
-FROM arm64v8/almalinux:10-kitten
+FROM arm64v8/almalinux:10
 
 RUN dnf install -y \
     'dnf-command(config-manager)' \
