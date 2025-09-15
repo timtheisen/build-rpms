@@ -1,4 +1,8 @@
 #!/bin/sh
+# Record the /etc/os-release ID, so we can tell opensuse-leap from sles
+. /etc/os-release
+echo "%os_release_id $ID" > /etc/rpm/os-release-id
+
 mkdir -p /tmp/rpmbuild/SOURCES
 mv sources/* /tmp/rpmbuild/SOURCES
 yum-builddep -y *.spec
