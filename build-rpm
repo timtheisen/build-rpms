@@ -9,4 +9,5 @@ yum-builddep -y *.spec
 rpmbuild -ba --define="_topdir /tmp/rpmbuild" *.spec
 ret=$?
 mv $(find /tmp/rpmbuild -name \*.rpm) .
+rpmlint *.rpm
 exit $ret
