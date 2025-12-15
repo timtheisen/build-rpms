@@ -3,9 +3,24 @@
 . /etc/os-release
 echo "%os_release_id $ID" > /etc/rpm/os-release-id
 
+if [ $ID = 'opensuse-leap' ]; then
+    INSTALL='zypper --non-interactive install'
+fi
+
 mkdir -p /tmp/rpmbuild/SOURCES
 mv sources/* /tmp/rpmbuild/SOURCES
-yum-builddep -y *.spec
+
+# Install the build dependencies
+if [ $ID = 'almalinux' ] || [ $ID = 'amzn' ] || [ $ID = 'fedora' ]; then
+    yum-builddep -y *.spec
+fi
+
+# Install the build dependencies
+if [ $ID = 'opensuse-leap' ]; then
+    # shellcheck disable=SC2046 # we want word splitting
+    $INSTALL $(rpmspec --parse *.spec | grep '^BuildRequires:' | sed -e 's/^BuildRequires://' | sed -e 's/,/ /')
+fi
+
 rpmbuild -ba --define="_topdir /tmp/rpmbuild" *.spec
 ret=$?
 mv $(find /tmp/rpmbuild -name \*.rpm) .

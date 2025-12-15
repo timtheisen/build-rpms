@@ -15,6 +15,8 @@ progdir=$(dirname "$0")
 for arch in *_*; do
 
     if [ ! -d output/${arch} ]; then
+        echo "======= Working on $arch ======="
+
         platform=$(echo "linux/${arch}" | sed s/_[^_]*$//)
         if [ $platform == 'x86_64_v2' ]; then
             platform='linux/amd64/v2'
