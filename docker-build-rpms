@@ -22,7 +22,7 @@ for arch in *_*; do
             platform='linux/amd64/v2'
         fi
         if ! docker image inspect ${image_name}:${arch} &>/dev/null; then
-            docker build ${arch} --platform $platform --tag ${image_name}:${arch}
+            docker build ${arch} --platform $platform --network=host --tag ${image_name}:${arch}
         fi
 
         tmp_working_dir=$(mktemp -d "${TMPDIR:-/tmp}/buildrpm-XXXXXX")
